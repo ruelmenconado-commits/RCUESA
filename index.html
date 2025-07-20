@@ -11,17 +11,141 @@
   <meta name="theme-color" content="#004080" />
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0; padding: 1rem;
+      background: #f8f8f8;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    header img {
+      height: 50px;
+    }
+    h2 { color: #004080; margin: 0; }
+    .section {
+      margin-bottom: 2rem;
+      padding: 1rem;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 0 5px #ccc;
+    }
+    h3 { margin-top: 0; }
+    input, textarea, select {
+      width: 100%; padding: 0.5rem;
+      margin: 0.5rem 0; box-sizing: border-box;
+    }
+    button {
+      background: #004080; color: white;
+      padding: 0.5rem 1rem; border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    ul { padding-left: 1.2rem; }
+    img, video {
+      max-width: 100%; margin-top: 0.5rem;
+    }
+  </style>
 </head>
 <body>
+
   <header>
-    <img src="logo.png" alt="Rotary Logo" style="height:50px;" />
+    <img src="logo.png" alt="Rotary Logo" />
     <h2>Rotary Club App</h2>
   </header>
-  <p>App content goes here...</p>
+
+  <div class="section">
+    <h3>📅 Calendar Activities</h3>
+    <input type="text" id="eventTitle" placeholder="Event Title" />
+    <input type="date" id="eventDate" />
+    <button onclick="addEvent()">Add Event</button>
+    <ul id="eventList"></ul>
+  </div>
+
+  <div class="section">
+    <h3>💰 Member Dues</h3>
+    <input type="text" id="memberName" placeholder="Member Name" />
+    <input type="number" id="memberDues" placeholder="Amount Paid (₱)" />
+    <button onclick="addDue()">Record Dues</button>
+    <ul id="duesList"></ul>
+  </div>
+
+  <div class="section">
+    <h3>🖼️ Media Gallery</h3>
+    <input type="file" accept="image/*,video/*" onchange="handleMedia(event)" />
+    <div id="mediaGallery"></div>
+  </div>
+
   <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('service-worker.js');
+    window.onload = function () {
+      loadEvents();
+      loadDues();
+      loadMedia();
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('service-worker.js');
+      }
+    };
+
+    function addEvent() {
+      const title = document.getElementById("eventTitle").value;
+      const date = document.getElementById("eventDate").value;
+      if (!title || !date) return alert("Enter event title and date.");
+      const events = JSON.parse(localStorage.getItem("events") || "[]");
+      events.push({ title, date });
+      localStorage.setItem("events", JSON.stringify(events));
+      loadEvents();
+    }
+
+    function loadEvents() {
+      const events = JSON.parse(localStorage.getItem("events") || "[]");
+      const list = document.getElementById("eventList");
+      list.innerHTML = events.map(e => `<li>${e.date} - ${e.title}</li>`).join("");
+    }
+
+    function addDue() {
+      const name = document.getElementById("memberName").value;
+      const amount = document.getElementById("memberDues").value;
+      if (!name || !amount) return alert("Enter name and amount.");
+      const dues = JSON.parse(localStorage.getItem("dues") || "[]");
+      dues.push({ name, amount });
+      localStorage.setItem("dues", JSON.stringify(dues));
+      loadDues();
+    }
+
+    function loadDues() {
+      const dues = JSON.parse(localStorage.getItem("dues") || "[]");
+      const list = document.getElementById("duesList");
+      list.innerHTML = dues.map(d => `<li>${d.name}: ₱${d.amount}</li>`).join("");
+    }
+
+    function handleMedia(event) {
+      const file = event.target.files[0];
+      const reader = new FileReader();
+      reader.onload = function () {
+        const media = JSON.parse(localStorage.getItem("media") || "[]");
+        media.push({ name: file.name, data: reader.result, type: file.type });
+        localStorage.setItem("media", JSON.stringify(media));
+        loadMedia();
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function loadMedia() {
+      const gallery = document.getElementById("mediaGallery");
+      const media = JSON.parse(localStorage.getItem("media") || "[]");
+      gallery.innerHTML = media.map(m => {
+        if (m.type.startsWith("image/"))
+          return `<img src="${m.data}" alt="${m.name}" />`;
+        if (m.type.startsWith("video/"))
+          return `<video controls src="${m.data}"></video>`;
+        return "";
+      }).join("");
     }
   </script>
+
 </body>
 </html>
