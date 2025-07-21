@@ -1,36 +1,26 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>RCUESA Member Dues</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>RCUESA App</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
 </head>
 <body>
-    <div id="app">
-        <h1>RCUESA App - Member Dues</h1>
+    <div class="container">
+        <!-- Add Logo -->
+        <img src="logo.png" alt="RCUESA Logo" style="max-width: 180px; margin-bottom: 15px;"/>
 
-        <div id="auth-section">
-            <input type="email" id="email" placeholder="Email" />
-            <input type="password" id="password" placeholder="Password" />
-            <button onclick="signup()">Sign Up</button>
-            <button onclick="login()">Log In</button>
-            <button onclick="logout()">Log Out</button>
-        </div>
+        <h1>RCUESA App</h1>
 
-        <div id="main-section" style="display:none;">
-            <h2>Welcome, <span id="user-email"></span></h2>
-            <input type="number" id="amount" placeholder="Enter Dues Amount" />
-            <input type="file" id="photo" accept="image/*" />
-            <button onclick="submitDues()">Submit Dues</button>
+        <input type="email" id="email" placeholder="Email" />
+        <input type="password" id="password" placeholder="Password" />
 
-            <h3>Your Payment History</h3>
-            <ul id="dues-list"></ul>
-        </div>
+        <button onclick="signUp()">Sign Up</button>
+        <button onclick="logIn()">Log In</button>
+        <button onclick="logOut()">Log Out</button>
     </div>
+
     <script src="app.js"></script>
 </body>
 </html>
