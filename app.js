@@ -1,78 +1,48 @@
+// Firebase config
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT.firebaseapp.com",
-    projectId: "YOUR_PROJECT",
-    storageBucket: "YOUR_PROJECT.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyDRMe262iRUnVq8z3pt13FkZzAXlBQIj9s",
+  authDomain: "rcuesa-app.firebaseapp.com",
+  projectId: "rcuesa-app",
+  storageBucket: "rcuesa-app.appspot.com",
+  messagingSenderId: "46052324290",
+  appId: "1:46052324290:android:15ff0aa714c203e84bdc5b"
 };
+
 firebase.initializeApp(firebaseConfig);
 
 const auth = firebase.auth();
 const db = firebase.firestore();
-const storage = firebase.storage();
 
-auth.onAuthStateChanged(user => {
-    if (user) {
-        document.getElementById("auth-section").style.display = "none";
-        document.getElementById("main-section").style.display = "block";
-        document.getElementById("user-email").textContent = user.email;
-        loadDues();
-    } else {
-        document.getElementById("auth-section").style.display = "block";
-        document.getElementById("main-section").style.display = "none";
-    }
-});
-
-function signup() {
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
-    auth.createUserWithEmailAndPassword(email, password).catch(alert);
+// Auth functions
+function signUp() {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+  auth.createUserWithEmailAndPassword(email, password)
+    .then(() => alert("Sign-up successful!"))
+    .catch(error => alert("Sign-up error: " + error.message));
 }
 
-function login() {
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
-    auth.signInWithEmailAndPassword(email, password).catch(alert);
+function logIn() {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+  auth.signInWithEmailAndPassword(email, password)
+    .then(() => alert("Logged in successfully!"))
+    .catch(error => alert("Login error: " + error.message));
 }
 
-function logout() {
-    auth.signOut();
+function logOut() {
+  auth.signOut()
+    .then(() => alert("Logged out."))
+    .catch(error => alert("Logout error: " + error.message));
 }
 
-function submitDues() {
-    const user = auth.currentUser;
-    const amount = document.getElementById("amount").value;
-    const photoFile = document.getElementById("photo").files[0];
-    if (!amount || !photoFile) return alert("Fill amount and choose a photo.");
-
-    const ref = storage.ref("dues_photos/" + user.uid + "/" + photoFile.name);
-    ref.put(photoFile).then(snapshot => snapshot.ref.getDownloadURL()).then(url => {
-        return db.collection("dues").add({
-            uid: user.uid,
-            email: user.email,
-            amount: parseFloat(amount),
-            timestamp: new Date(),
-            photoURL: url
-        });
-    }).then(() => {
-        document.getElementById("amount").value = "";
-        document.getElementById("photo").value = "";
-        loadDues();
-    }).catch(alert);
+// Event & dues dummy handlers
+function addEvent() {
+  alert("Event added!");
+  // Add real Firestore logic here
 }
 
-function loadDues() {
-    const user = auth.currentUser;
-    db.collection("dues").where("uid", "==", user.uid).orderBy("timestamp", "desc")
-      .get().then(snapshot => {
-        const list = document.getElementById("dues-list");
-        list.innerHTML = "";
-        snapshot.forEach(doc => {
-            const data = doc.data();
-            const li = document.createElement("li");
-            li.textContent = `₱${data.amount} - ${new Date(data.timestamp.toDate()).toLocaleString()}`;
-            list.appendChild(li);
-        });
-    });
+function recordDues() {
+  alert("Dues recorded!");
+  // Add real Firestore logic here
 }
