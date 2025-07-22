@@ -15,19 +15,6 @@
   <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-auth-compat.js"></script>
 
-  <!-- Firebase Configuration -->
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyDRMe262iRUnVq8z3pt13FkZzAXlBQIj9s",
-      authDomain: "rcuesa-app.firebaseapp.com",
-      projectId: "rcuesa-app",
-      storageBucket: "rcuesa-app.appspot.com",
-      messagingSenderId: "46052324290",
-      appId: "1:46052324290:android:15ff0aa714c203e84bdc5b"
-    };
-    firebase.initializeApp(firebaseConfig);
-  </script>
-
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -106,8 +93,20 @@
     <div id="mediaGallery"></div>
   </div>
 
-  <!-- App Logic -->
+  <!-- ✅ Firebase Initialization and App Logic -->
   <script>
+    // Initialize Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyDRMe262iRUnVq8z3pt13FkZzAXlBQIj9s",
+      authDomain: "rcuesa-app.firebaseapp.com",
+      projectId: "rcuesa-app",
+      storageBucket: "rcuesa-app.appspot.com",
+      messagingSenderId: "46052324290",
+      appId: "1:46052324290:android:15ff0aa714c203e84bdc5b"
+    };
+    firebase.initializeApp(firebaseConfig);
+
+    // On page load
     window.onload = function () {
       loadEvents();
       loadDues();
@@ -121,30 +120,20 @@
       const email = document.getElementById("email").value;
       const password = document.getElementById("password").value;
       firebase.auth().createUserWithEmailAndPassword(email, password)
-        .then((userCredential) => {
-          alert("Sign-up successful! Welcome.");
-        })
-        .catch((error) => {
-          alert("Sign-up error: " + error.message);
-        });
+        .then(() => alert("Sign-up successful! Welcome."))
+        .catch(error => alert("Sign-up error: " + error.message));
     }
 
     function logIn() {
       const email = document.getElementById("email").value;
       const password = document.getElementById("password").value;
       firebase.auth().signInWithEmailAndPassword(email, password)
-        .then((userCredential) => {
-          alert("Logged in!");
-        })
-        .catch((error) => {
-          alert("Login error: " + error.message);
-        });
+        .then(() => alert("Logged in!"))
+        .catch(error => alert("Login error: " + error.message));
     }
 
     function logOut() {
-      firebase.auth().signOut().then(() => {
-        alert("Logged out");
-      });
+      firebase.auth().signOut().then(() => alert("Logged out"));
     }
 
     function addEvent() {
