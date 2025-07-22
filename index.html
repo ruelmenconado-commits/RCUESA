@@ -11,9 +11,10 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
 
-  <!-- Firebase SDKs -->
+  <!-- ✅ Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-firestore-compat.js"></script>
 
   <style>
     body {
@@ -72,7 +73,7 @@
   </div>
 
   <div class="section">
-    <h3>📅 Calendar Activities</h3>
+    <h3>🗕️ Calendar Activities</h3>
     <input type="text" id="eventTitle" placeholder="Event Title" />
     <input type="date" id="eventDate" />
     <button onclick="addEvent()">Add Event</button>
@@ -93,9 +94,7 @@
     <div id="mediaGallery"></div>
   </div>
 
-  <!-- ✅ Firebase Initialization and App Logic -->
   <script>
-    // Initialize Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyDRMe262iRUnVq8z3pt13FkZzAXlBQIj9s",
       authDomain: "rcuesa-app.firebaseapp.com",
@@ -105,8 +104,9 @@
       appId: "1:46052324290:android:15ff0aa714c203e84bdc5b"
     };
     firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
 
-    // On page load
     window.onload = function () {
       loadEvents();
       loadDues();
@@ -119,7 +119,7 @@
     function signUp() {
       const email = document.getElementById("email").value;
       const password = document.getElementById("password").value;
-      firebase.auth().createUserWithEmailAndPassword(email, password)
+      auth.createUserWithEmailAndPassword(email, password)
         .then(() => alert("Sign-up successful! Welcome."))
         .catch(error => alert("Sign-up error: " + error.message));
     }
@@ -127,13 +127,13 @@
     function logIn() {
       const email = document.getElementById("email").value;
       const password = document.getElementById("password").value;
-      firebase.auth().signInWithEmailAndPassword(email, password)
+      auth.signInWithEmailAndPassword(email, password)
         .then(() => alert("Logged in!"))
         .catch(error => alert("Login error: " + error.message));
     }
 
     function logOut() {
-      firebase.auth().signOut().then(() => alert("Logged out"));
+      auth.signOut().then(() => alert("Logged out"));
     }
 
     function addEvent() {
