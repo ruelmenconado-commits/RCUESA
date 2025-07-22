@@ -1,26 +1,207 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>RCUESA App</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>RCUESA App</title>
+  <link rel="icon" href="logo-192.png" />
+  <link rel="apple-touch-icon" href="logo-192.png" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#004080" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-auth-compat.js"></script>
+
+  <!-- Firebase Configuration -->
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDRMe262iRUnVq8z3pt13FkZzAXlBQIj9s",
+      authDomain: "rcuesa-app.firebaseapp.com",
+      projectId: "rcuesa-app",
+      storageBucket: "rcuesa-app.appspot.com",
+      messagingSenderId: "46052324290",
+      appId: "1:46052324290:android:15ff0aa714c203e84bdc5b"
+    };
+    firebase.initializeApp(firebaseConfig);
+  </script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0; padding: 1rem;
+      background: #f8f8f8;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    header img {
+      height: 50px;
+    }
+    h2 { color: #004080; margin: 0; }
+    .section {
+      margin-bottom: 2rem;
+      padding: 1rem;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 0 5px #ccc;
+    }
+    h3 { margin-top: 0; }
+    input, textarea, select {
+      width: 100%; padding: 0.5rem;
+      margin: 0.5rem 0; box-sizing: border-box;
+    }
+    button {
+      background: #004080; color: white;
+      padding: 0.5rem 1rem; border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-bottom: 0.5rem;
+    }
+    ul { padding-left: 1.2rem; }
+    img, video {
+      max-width: 100%; margin-top: 0.5rem;
+    }
+  </style>
 </head>
+
 <body>
-    <div class="container">
-        <!-- Add Logo -->
-        <img src="logo.png" alt="RCUESA Logo" style="max-width: 180px; margin-bottom: 15px;"/>
+  <header>
+    <img src="logo.png" alt="Rotary Logo" />
+    <h2>RCUESA App</h2>
+  </header>
 
-        <h1>RCUESA App</h1>
+  <div class="section">
+    <input type="email" id="email" placeholder="Email" />
+    <input type="password" id="password" placeholder="Password" />
+    <button onclick="signUp()">Sign Up</button>
+    <button onclick="logIn()">Log In</button>
+    <button onclick="logOut()">Log Out</button>
+  </div>
 
-        <input type="email" id="email" placeholder="Email" />
-        <input type="password" id="password" placeholder="Password" />
+  <div class="section">
+    <h3>📅 Calendar Activities</h3>
+    <input type="text" id="eventTitle" placeholder="Event Title" />
+    <input type="date" id="eventDate" />
+    <button onclick="addEvent()">Add Event</button>
+    <ul id="eventList"></ul>
+  </div>
 
-        <button onclick="signUp()">Sign Up</button>
-        <button onclick="logIn()">Log In</button>
-        <button onclick="logOut()">Log Out</button>
-    </div>
+  <div class="section">
+    <h3>💰 Member Dues</h3>
+    <input type="text" id="memberName" placeholder="Member Name" />
+    <input type="number" id="memberDues" placeholder="Amount Paid (₱)" />
+    <button onclick="addDue()">Record Dues</button>
+    <ul id="duesList"></ul>
+  </div>
 
-    <script src="app.js"></script>
+  <div class="section">
+    <h3>🖼️ Media Gallery</h3>
+    <input type="file" accept="image/*,video/*" onchange="handleMedia(event)" />
+    <div id="mediaGallery"></div>
+  </div>
+
+  <!-- App Logic -->
+  <script>
+    window.onload = function () {
+      loadEvents();
+      loadDues();
+      loadMedia();
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('service-worker.js');
+      }
+    };
+
+    function signUp() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      firebase.auth().createUserWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+          alert("Sign-up successful! Welcome.");
+        })
+        .catch((error) => {
+          alert("Sign-up error: " + error.message);
+        });
+    }
+
+    function logIn() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      firebase.auth().signInWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+          alert("Logged in!");
+        })
+        .catch((error) => {
+          alert("Login error: " + error.message);
+        });
+    }
+
+    function logOut() {
+      firebase.auth().signOut().then(() => {
+        alert("Logged out");
+      });
+    }
+
+    function addEvent() {
+      const title = document.getElementById("eventTitle").value;
+      const date = document.getElementById("eventDate").value;
+      if (!title || !date) return alert("Enter event title and date.");
+      const events = JSON.parse(localStorage.getItem("events") || "[]");
+      events.push({ title, date });
+      localStorage.setItem("events", JSON.stringify(events));
+      loadEvents();
+    }
+
+    function loadEvents() {
+      const events = JSON.parse(localStorage.getItem("events") || "[]");
+      const list = document.getElementById("eventList");
+      list.innerHTML = events.map(e => `<li>${e.date} - ${e.title}</li>`).join("");
+    }
+
+    function addDue() {
+      const name = document.getElementById("memberName").value;
+      const amount = document.getElementById("memberDues").value;
+      if (!name || !amount) return alert("Enter name and amount.");
+      const dues = JSON.parse(localStorage.getItem("dues") || "[]");
+      dues.push({ name, amount });
+      localStorage.setItem("dues", JSON.stringify(dues));
+      loadDues();
+    }
+
+    function loadDues() {
+      const dues = JSON.parse(localStorage.getItem("dues") || "[]");
+      const list = document.getElementById("duesList");
+      list.innerHTML = dues.map(d => `<li>${d.name}: ₱${d.amount}</li>`).join("");
+    }
+
+    function handleMedia(event) {
+      const file = event.target.files[0];
+      const reader = new FileReader();
+      reader.onload = function () {
+        const media = JSON.parse(localStorage.getItem("media") || "[]");
+        media.push({ name: file.name, data: reader.result, type: file.type });
+        localStorage.setItem("media", JSON.stringify(media));
+        loadMedia();
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function loadMedia() {
+      const gallery = document.getElementById("mediaGallery");
+      const media = JSON.parse(localStorage.getItem("media") || "[]");
+      gallery.innerHTML = media.map(m => {
+        if (m.type.startsWith("image/"))
+          return `<img src="${m.data}" alt="${m.name}" />`;
+        if (m.type.startsWith("video/"))
+          return `<video controls src="${m.data}"></video>`;
+        return "";
+      }).join("");
+    }
+  </script>
 </body>
 </html>
