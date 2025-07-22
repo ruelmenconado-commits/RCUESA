@@ -11,10 +11,120 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
 
-  <!-- ✅ Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-firestore-compat.js"></script>
+  <!-- Firebase (Modular v9 SDK) -->
+  <script type="module">
+    // Import Firebase SDKs
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.24.0/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/9.24.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDRMe262iRUnVq8z3pt13FkZzAXlBQIj9s",
+      authDomain: "rcuesa-app.firebaseapp.com",
+      projectId: "rcuesa-app",
+      storageBucket: "rcuesa-app.appspot.com",
+      messagingSenderId: "46052324290",
+      appId: "1:46052324290:android:15ff0aa714c203e84bdc5b"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    // Auth functions
+    window.signUp = async function () {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      try {
+        await createUserWithEmailAndPassword(auth, email, password);
+        alert("Sign-up successful!");
+      } catch (error) {
+        alert("Sign-up error: " + error.message);
+      }
+    };
+
+    window.logIn = async function () {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+        alert("Logged in successfully!");
+      } catch (error) {
+        alert("Login error: " + error.message);
+      }
+    };
+
+    window.logOut = async function () {
+      try {
+        await signOut(auth);
+        alert("Logged out");
+      } catch (error) {
+        alert("Logout error: " + error.message);
+      }
+    };
+
+    // LocalStorage functions for calendar, dues, and media
+    window.onload = function () {
+      loadEvents();
+      loadDues();
+      loadMedia();
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('service-worker.js');
+      }
+    };
+
+    window.addEvent = function () {
+      const title = document.getElementById("eventTitle").value;
+      const date = document.getElementById("eventDate").value;
+      if (!title || !date) return alert("Enter event title and date.");
+      const events = JSON.parse(localStorage.getItem("events") || "[]");
+      events.push({ title, date });
+      localStorage.setItem("events", JSON.stringify(events));
+      loadEvents();
+    };
+
+    window.loadEvents = function () {
+      const events = JSON.parse(localStorage.getItem("events") || "[]");
+      const list = document.getElementById("eventList");
+      list.innerHTML = events.map(e => `<li>${e.date} - ${e.title}</li>`).join("");
+    };
+
+    window.addDue = function () {
+      const name = document.getElementById("memberName").value;
+      const amount = document.getElementById("memberDues").value;
+      if (!name || !amount) return alert("Enter name and amount.");
+      const dues = JSON.parse(localStorage.getItem("dues") || "[]");
+      dues.push({ name, amount });
+      localStorage.setItem("dues", JSON.stringify(dues));
+      loadDues();
+    };
+
+    window.loadDues = function () {
+      const dues = JSON.parse(localStorage.getItem("dues") || "[]");
+      const list = document.getElementById("duesList");
+      list.innerHTML = dues.map(d => `<li>${d.name}: ₱${d.amount}</li>`).join("");
+    };
+
+    window.handleMedia = function (event) {
+      const file = event.target.files[0];
+      const reader = new FileReader();
+      reader.onload = function () {
+        const media = JSON.parse(localStorage.getItem("media") || "[]");
+        media.push({ name: file.name, data: reader.result, type: file.type });
+        localStorage.setItem("media", JSON.stringify(media));
+        loadMedia();
+      };
+      reader.readAsDataURL(file);
+    };
+
+    window.loadMedia = function () {
+      const gallery = document.getElementById("mediaGallery");
+      const media = JSON.parse(localStorage.getItem("media") || "[]");
+      gallery.innerHTML = media.map(m => {
+        if (m.type.startsWith("image/")) return `<img src="${m.data}" alt="${m.name}" />`;
+        if (m.type.startsWith("video/")) return `<video controls src="${m.data}"></video>`;
+        return "";
+      }).join("");
+    };
+  </script>
 
   <style>
     body {
@@ -73,7 +183,7 @@
   </div>
 
   <div class="section">
-    <h3>🗕️ Calendar Activities</h3>
+    <h3>📅 Calendar Activities</h3>
     <input type="text" id="eventTitle" placeholder="Event Title" />
     <input type="date" id="eventDate" />
     <button onclick="addEvent()">Add Event</button>
@@ -93,104 +203,5 @@
     <input type="file" accept="image/*,video/*" onchange="handleMedia(event)" />
     <div id="mediaGallery"></div>
   </div>
-
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyDRMe262iRUnVq8z3pt13FkZzAXlBQIj9s",
-      authDomain: "rcuesa-app.firebaseapp.com",
-      projectId: "rcuesa-app",
-      storageBucket: "rcuesa-app.appspot.com",
-      messagingSenderId: "46052324290",
-      appId: "1:46052324290:android:15ff0aa714c203e84bdc5b"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-
-    window.onload = function () {
-      loadEvents();
-      loadDues();
-      loadMedia();
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('service-worker.js');
-      }
-    };
-
-    function signUp() {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-      auth.createUserWithEmailAndPassword(email, password)
-        .then(() => alert("Sign-up successful! Welcome."))
-        .catch(error => alert("Sign-up error: " + error.message));
-    }
-
-    function logIn() {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-      auth.signInWithEmailAndPassword(email, password)
-        .then(() => alert("Logged in!"))
-        .catch(error => alert("Login error: " + error.message));
-    }
-
-    function logOut() {
-      auth.signOut().then(() => alert("Logged out"));
-    }
-
-    function addEvent() {
-      const title = document.getElementById("eventTitle").value;
-      const date = document.getElementById("eventDate").value;
-      if (!title || !date) return alert("Enter event title and date.");
-      const events = JSON.parse(localStorage.getItem("events") || "[]");
-      events.push({ title, date });
-      localStorage.setItem("events", JSON.stringify(events));
-      loadEvents();
-    }
-
-    function loadEvents() {
-      const events = JSON.parse(localStorage.getItem("events") || "[]");
-      const list = document.getElementById("eventList");
-      list.innerHTML = events.map(e => `<li>${e.date} - ${e.title}</li>`).join("");
-    }
-
-    function addDue() {
-      const name = document.getElementById("memberName").value;
-      const amount = document.getElementById("memberDues").value;
-      if (!name || !amount) return alert("Enter name and amount.");
-      const dues = JSON.parse(localStorage.getItem("dues") || "[]");
-      dues.push({ name, amount });
-      localStorage.setItem("dues", JSON.stringify(dues));
-      loadDues();
-    }
-
-    function loadDues() {
-      const dues = JSON.parse(localStorage.getItem("dues") || "[]");
-      const list = document.getElementById("duesList");
-      list.innerHTML = dues.map(d => `<li>${d.name}: ₱${d.amount}</li>`).join("");
-    }
-
-    function handleMedia(event) {
-      const file = event.target.files[0];
-      const reader = new FileReader();
-      reader.onload = function () {
-        const media = JSON.parse(localStorage.getItem("media") || "[]");
-        media.push({ name: file.name, data: reader.result, type: file.type });
-        localStorage.setItem("media", JSON.stringify(media));
-        loadMedia();
-      };
-      reader.readAsDataURL(file);
-    }
-
-    function loadMedia() {
-      const gallery = document.getElementById("mediaGallery");
-      const media = JSON.parse(localStorage.getItem("media") || "[]");
-      gallery.innerHTML = media.map(m => {
-        if (m.type.startsWith("image/"))
-          return `<img src="${m.data}" alt="${m.name}" />`;
-        if (m.type.startsWith("video/"))
-          return `<video controls src="${m.data}"></video>`;
-        return "";
-      }).join("");
-    }
-  </script>
 </body>
 </html>
